@@ -1,9 +1,13 @@
 import express, { Request, Response } from "express";
 import services from "../services/services";
 
-const create = (request: Request, response: Response) => {
+const create = (request: Request, response: Response, next: any) => {
+  const url = request.body.url;
+  if(!url){
+    const error = new Error("Could not find URL in request");
+    return next(error);
+  }
   try {
-    const url = request.body.url;
     const returnService = services.shortingUrl(url);
     return response.status(200).json({
       message:
@@ -11,17 +15,19 @@ const create = (request: Request, response: Response) => {
         returnService,
     });
   } catch (error) {
-    return response.status(400).json({ message: "Houve algum erro" });
+    return next(error)
   }
 };
 
-const get = async (request: Request, response: Response) => {
+const get = async (request: Request, response: Response, next: any) => {
   try {
-    const id = request.params;
+    const { id } = request.params;
+    console.log({ id });
     const returnService = await services.searchUrl(id);
-    return response.redirect(returnService, 302);
+    return response.redirect(302, returnService);
   } catch (error) {
-    return response.status(400).json({ message: "Houve algum erro" });
+    return next()
+    // return response.status(404).json({ message: "Not Found" });
   }
 };
 

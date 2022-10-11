@@ -1,12 +1,24 @@
-import fs from "fs";
 import axios from "axios";
+import { preProcessFile } from "typescript";
+import config from "../../knexfile";
 
-export async function urlReadFile() {
-  return (await axios.get("http://localhost:3000/urls")).data;
+const knex = require("knex")(config);
+
+export async function urlReadFile(shortUrl: string) {
+  console.log({ shortUrl });
+  const url = await knex
+    .select("url")
+    .where({ shortUrl: shortUrl })
+    .table("url")
+    .first();
+  console.log(url);
+  return await url.url;
 }
 
-async function urlWriteFile(url: { [key: string]: string }) {
-  await axios.post("http://localhost:3000/urls", url);
+async function urlWriteFile(url: string, shortUrl: string) {
+  const newUrl = await knex("url").insert({ shortUrl, url });
+  console.log({ newUrl });
+  return await newUrl;
 }
 
 export default { urlWriteFile, urlReadFile };
